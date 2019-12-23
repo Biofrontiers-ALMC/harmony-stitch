@@ -69,10 +69,29 @@ end
 %Get list of TIFF files in current folder
 TIFFlist = dir(fullfile(folder, 'r01*.tif*'));
 
+%Find files that match frame range of interest
+framerange = 96:140;
+
+matchingIdxs = zeros(1, numel(framerange));
+
+for ii = 1:numel(framerange)
+    
+    idx = regexp({TIFFlist.name}, sprintf('f%.0f[\\D]', framerange(ii)));
+    matchingIdxs(ii) = find(~cellfun('isempty', idx));
+end
+
+
+
+%%
+
 %Get list of indices matching the filenames
 idxFiles = ismember({imgData.Filename}, {TIFFlist.name});
 
 currImgData = imgData(idxFiles);
+
+%Sort by image name
+[x, idx] = sort({currImgData.Filename});
+currImgData = currImgData(idx);
 
 %Correct the center positions
 for ii = 1:numel(currImgData)
@@ -101,15 +120,19 @@ imgOut = zeros(imgOutHeight, imgOutWidth, 'uint16');
 for ii = 1:numel(TIFFlist)
     
     I = imread(currImgData(ii).Filename);
-     
-    XX = round(currImgData(ii).PositionXcorr - minX + 1); %+1 because MATLAB indices start at 1
-    YY = round(currImgData(ii).PositionYcorr - minY + 1);
+    
+    XX = floor(currImgData(ii).PositionXcorr - minX + 1); %+1 because MATLAB indices start at 1
+    YY = floor(currImgData(ii).PositionYcorr - minY + 1);
+    
+    %%Try scaling
+    %tform = affine2d([inv(currImgData(ii).OrientationMatrix(1:2,1:2)), [0;0];[0 0 1]]);
+    %I = imwarp(I, tform);
     
     imgOut((YY):(YY + size(I,1) - 1), XX:(XX + size(I,2) - 1)) = I;
     
 end
 
-imwrite(imgOut, 'test2.tiff', 'Compression', 'none');
+imwrite(imgOut, 'test.tiff', 'Compression', 'none');
 
 %T
 

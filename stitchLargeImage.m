@@ -1,3 +1,11 @@
+%HARMONYSTITCH  Stitch large images from Opera Phenix
+%
+%  HARMONYSTITCH will 
+%
+%  HARMONYSTITCH(folder, frame_range, outputfolder)
+%
+%  This function expects to find 
+
 clearvars
 clc
 
@@ -66,23 +74,30 @@ end
 %     
 % end
 
+% folder = pwd;
+
 %Get list of TIFF files in current folder
 TIFFlist = dir(fullfile(folder, 'r01*.tif*'));
 
 %Find files that match frame range of interest
-framerange = 96:140;
+framerange = 872:958;
+ch = 1;
 
-matchingIdxs = zeros(1, numel(framerange));
+matchingIdxs = false(1, numel(TIFFlist));
 
 for ii = 1:numel(framerange)
     
-    idx = regexp({TIFFlist.name}, sprintf('f%.0f[\\D]', framerange(ii)));
-    matchingIdxs(ii) = find(~cellfun('isempty', idx));
+    if framerange(ii) < 10
+        idx = regexp({TIFFlist.name}, sprintf('f%02.0f[\\D]+.*ch%.0f[\\D]', framerange(ii), ch));
+    else
+        idx = regexp({TIFFlist.name}, sprintf('f%.0f[\\D]+.*ch%.0f[\\D]', framerange(ii), ch));
+    end
+    matchingIdxs = matchingIdxs | ~cellfun('isempty', idx);
+    
 end
 
-
-
-%%
+%Crop to matching TIFFs
+TIFFlist = TIFFlist(matchingIdxs);
 
 %Get list of indices matching the filenames
 idxFiles = ismember({imgData.Filename}, {TIFFlist.name});

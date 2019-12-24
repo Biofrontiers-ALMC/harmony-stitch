@@ -15,7 +15,7 @@ baseFolder = uigetdir('', 'Set base folder');
 %
 %Note: Make sure the range goes from low:high otherwise the code will throw
 %an error.
-imageRange = 303:428;
+imageRange = {872:958, 1371:1418};
 
 %Specify the range of channels to export (e.g. channels = 1:3)
 channels = 1;
